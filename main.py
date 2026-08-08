@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import pyperclip
 
 from src import Bip39Codec, encrypt_entropy, decrypt_entropy
 from set_logs import setup_logger
@@ -84,7 +85,8 @@ def main():
                 logger.error("Provided seed phrase failed checksum validation")
                 sys.exit(1)
             blob = encrypt_entropy(entropy_bytes, passphrase)
-            print(blob)
+            pyperclip.copy(bloab)
+            logging.info("Blod copied to clipboard")
         except Exception as exc:
             logger.error(f"Encryption failed: {exc}")
             sys.exit(1)
