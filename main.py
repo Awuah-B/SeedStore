@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import sys
+import getpass
 import argparse
 import pyperclip
 
@@ -31,15 +32,10 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "seed_phrase",
-        nargs="*",
-        help="BIP39 standard words (provide when encrypting)",
-    )
-
-    parser.add_argument(
         "-k",
         "--key",
-        help="Secret passphrase (optional)",
+        action="store_true",
+        help="Prompt for a passphrase to use for encryption/decryption (optional, blank for none)",
     )
 
     parser.add_argument(
@@ -49,6 +45,24 @@ def parse_arguments():
     )
 
     return parser.parse_args()
+
+def get_seed_phrase(args) -> list[str]:
+    try:
+        line = getpass.getpass("Seed phrase (input hidden): ")
+    except (KeyboardInterrupt):
+        logger.error("No seed phrase provided")
+        sys.exit(1)
+    return line.split()
+
+def get_passphrase(args) -> str | None:
+    if args.key:
+        try:
+            pw = getpass.getpass("Passphrase (optional, blank for none): ")
+        except (KeyboardInterrupt):
+            logger.info("Operation cancelled by user")
+            sys.exit(1)
+        return pw or None
+    return None
 
 
 def main():
@@ -64,7 +78,7 @@ def main():
         sys.exit(1)
 
     if args.encrypt:
-        words = args.seed_phrase or []
+        words = get_seed_phrase(args)
         valid_sizes = {12, 15, 18, 21, 24}
         if len(words) not in valid_sizes:
             logger.error("seed-phrase must be 12, 15, 18, 21 or 24 words")
@@ -76,7 +90,8 @@ def main():
                 logger.error("Seed-phrase must be ASCII alphabetic only")
                 sys.exit(1)
 
-        passphrase = f"Mnemonic+{args.key}" if args.key else "Mnemonic"
+        key = get_passphrase(args)
+        passphrase = f"Mnemonic+{key}" if key else "Mnemonic"
 
         try:
             phrase = " ".join(words)
@@ -85,8 +100,12 @@ def main():
                 logger.error("Provided seed phrase failed checksum validation")
                 sys.exit(1)
             blob = encrypt_entropy(entropy_bytes, passphrase)
-            pyperclip.copy(blob)
-            logger.info("Blod copied to clipboard")
+            try:
+                pyperclip.copy(blob)
+                logger.info("Blob copied to clipboard")
+            except Exception as exc:
+                logger.warning(f"Failed to copy blob to clipboard: {exc}")
+                print(blob)
         except Exception as exc:
             logger.error(f"Encryption failed: {exc}")
             sys.exit(1)
@@ -96,7 +115,8 @@ def main():
             logger.error("No encrypted blob provided; use -b/--blob to supply it")
             sys.exit(1)
 
-        passphrase = f"Mnemonic+{args.key}" if args.key else "Mnemonic"
+        key = get_passphrase(args)
+        passphrase = f"Mnemonic+{key}" if key else "Mnemonic"
         try:
             entropy = decrypt_entropy(args.blob, passphrase)
             phrase = codec.entropy_to_phrase(entropy)
