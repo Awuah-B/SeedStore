@@ -34,12 +34,14 @@ Run `main.py` from the project root.
 ### Encrypt a seed phrase
 
 ```bash
-python3 main.py --encrypt legal winner thank year wave sausage worth useful legal winner thank yellow
+python3 main.py --encrypt
 ```
 
-- The tool expects a valid BIP-39 seed phrase of 12, 15, 18, 21, or 24 words.
-- The encrypted output blob is copied to the clipboard automatically.
-- Use `-k` / `--key` to include an optional secret passphrase.
+- The tool prompts for a seed phrase interactively and expects a valid BIP-39 seed phrase of 12, 15, 18, 21, or 24 words.
+- Words must contain only ASCII alphabetic characters.
+- Use `-k` / `--key` to provide an optional passphrase at prompt time (blank for no passphrase).
+- The encrypted output blob is copied to the clipboard automatically when possible.
+- If clipboard copy fails, the blob is printed to standard output.
 
 ### Decrypt an encrypted blob
 
@@ -47,8 +49,10 @@ python3 main.py --encrypt legal winner thank year wave sausage worth useful lega
 python3 main.py --decrypt -b <encrypted_blob_here>
 ```
 
+- The tool requires `-b` / `--blob` when decrypting.
 - The decrypted seed phrase is printed to standard output.
-- Use `-k` / `--key` if the blob was encrypted with a passphrase.
+- Use `-k` / `--key` if the blob was encrypted with an optional passphrase.
+- The tool verifies the decrypted phrase with BIP-39 checksum and round-trip entropy validation.
 
 ## Encryption format
 
