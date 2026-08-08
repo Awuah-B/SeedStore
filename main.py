@@ -85,8 +85,8 @@ def main():
                 logger.error("Provided seed phrase failed checksum validation")
                 sys.exit(1)
             blob = encrypt_entropy(entropy_bytes, passphrase)
-            pyperclip.copy(bloab)
-            logging.info("Blod copied to clipboard")
+            pyperclip.copy(blob)
+            logger.info("Blod copied to clipboard")
         except Exception as exc:
             logger.error(f"Encryption failed: {exc}")
             sys.exit(1)
