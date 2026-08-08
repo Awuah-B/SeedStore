@@ -12,10 +12,11 @@ def setup_logger(name: str, level: Optional[str]= None) -> logging.Logger:
             '{"timestamp":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","message":"%(message)s"}',
             datefmt='%Y-%m-%dT%H:%M:%S'
             )
-
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    if not logger.handlers:
+        # Console handler
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+    logger.propagate = False
 
     return logger
